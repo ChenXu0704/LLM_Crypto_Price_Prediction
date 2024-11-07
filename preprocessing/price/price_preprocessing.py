@@ -13,17 +13,21 @@ def prev_date(date_str):
     # Convert the result back to a string in the same format
     day_after_str = day_after.strftime('%Y-%m-%d')
     return day_after_str
+def get_change(entry):
+    if entry['Close'] >= entry['Open']:
+        return 1
+    return 0
 
 def crypto_price_preprocessing(path):
     data = pd.read_csv(path)
     if 'diff' in data.columns:
-        print(f"{path} has been processed. Continue...")
-        return
+         print(f"{path} has been processed. Continue...")
+         return
     print(f"Processing {path}...")
     data['Date'] = data['Date'].apply(convert_date)
     data['prev_date'] = data['Date'].apply(prev_date)
     data['Open'] = data['Open'].apply(lambda x : float(x.split("$")[1]))
     data['Close'] = data['Close'].apply(lambda x : float(x.split("$")[1]))
-    data['diff'] = data['Open'] <= data['Close']
+    data['diff'] = data.apply(get_change, axis=1)
     data.to_csv(path, index=False)
     print(f"Done...")
