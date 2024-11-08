@@ -20,10 +20,11 @@ def get_change(entry):
 
 def crypto_price_preprocessing(path):
     data = pd.read_csv(path)
+    data_name = path.split('/')[-1]
     if 'diff' in data.columns:
-         print(f"{path} has been processed. Continue...")
+         print(f"{data_name} has been processed. Continue...")
          return
-    print(f"Processing {path}...")
+    print(f"Processing {data_name}...")
     data['Date'] = data['Date'].apply(convert_date)
     data['prev_date'] = data['Date'].apply(prev_date)
     data['Open'] = data['Open'].apply(lambda x : float(x.split("$")[1]))
