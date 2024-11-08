@@ -1,2 +1,25 @@
 crypto_list: ['Polkadot','Bitcoincash','cardano','XRP','litecoin','Stellar','Monero','solana','dogecoin','Avax','Chainlink',
-      'polygonnetwork', 'EthereumClassic','terraluna','stacks', 'Tronix', 'dashpay', 'UniSwap','SHIBArmy', 'Bitcoin','ethereum']
+      'EthereumClassic','terraluna','stacks', 'Tronix', 'dashpay', 'UniSwap','SHIBArmy', 'Bitcoin','ethereum']
+data:
+      crypto_price:
+            data_dir: '/data/price/'
+            indata_format: 'cryptoname_price_history.csv'
+            replace_pattern: 'cryptoname'
+      reddit_post:
+            scrape_method: 'selenium' #for day by day purpose. 'pushshift' # for bulk scraping purpose, disabled by Reddit
+            columns: ['index', 'id', 'day', 'title', 'author_fullname', 'url', 'score']
+            pushshift:
+                  start_date: "06/01/2021"
+                  end_date: "06/01/2020"
+                  outdata_format: "cryptoname_post_pushshift.csv"
+                  merge: False
+                  reddit_client_id: "your_id"
+                  reddit_client_secret: "your_secret"
+                  username: ""
+                  thread_id: ""
+            selenium: 
+                  outdata_format: "cryptoname_postlink_selelium.csv"
+            outdata_dir: './data/post/'
+            replace_pattern: 'cryptoname'
+            
+            
