@@ -183,7 +183,6 @@ def scrape_with_selenium():
     break 
   driver.close()
 
-# columns: ['index', 'id', 'day', 'title', 'author_fullname', 'url', 'score']
 # Scroll the page down to retrieve all the Reddit posts
 def lazy_scroll(driver):
     current_height = driver.execute_script('window.scrollTo(0,document.body.scrollHeight);')
