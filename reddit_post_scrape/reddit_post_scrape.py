@@ -1,12 +1,15 @@
 import requests, json, csv 
 import pandas as pd
-from datetime import datetime
+from datetime import datetime, timezone
 import time
 import traceback
 from omegaconf import DictConfig, OmegaConf
 from selenium import webdriver
+from selenium.webdriver.chrome.service import Service
+from selenium.webdriver.chrome.options import Options
+from webdriver_manager.chrome import ChromeDriverManager
 from bs4 import BeautifulSoup
-import os
+import os, re
 
 def scrape_with_pushshift():
   # Read the configuration file
@@ -36,8 +39,7 @@ def scrape_with_pushshift():
   url_template = "https://api.pushshift.io/reddit/submission/search?limit=1000&{}&before="
   #output_dir = config.data.outdata_dir
   output = f"{config.data.reddit_post.outdata_dir}{outdata_format}"
-  print("testing scrape_with_pushshift.py")
-  print(output)
+  
   for crypto in crypto_list:
     output = outdata_format.replace(replace_pattern, crypto)
     filters = []
@@ -102,22 +104,22 @@ def write_csv_line(writer, obj, i, columns):
     output_list = [None for i in range(len(columns))]
     output_list[0] = i
     if 'id' in columns:
-      index = columns.find('id')
+      index = columns.index('id')
       output_list[index] = obj['id']
     if 'day' in columns:
-      index = columns.find('day')
+      index = columns.index('day')
       output_list[index] = datetime.fromtimestamp(obj['created_utc']).strftime("%Y-%m-%d")
     if 'title' in columns:
-      index = columns.find('title')
-      output_list[index] = obj['body']
+      index = columns.index('title')
+      output_list[index] = clean_text(obj['body'])
     if 'author_fullname' in columns:
-      index = columns.find('author_fullname')
+      index = columns.index('author_fullname')
       try:
           output_list[index] = f"u/{obj['author_fullname']}"
       except:
           output_list[index] = "u/[deleted]"
     if 'url' in columns:
-      index = columns.find('url')
+      index = columns.index('url')
       output_list[index] = f"https://www.reddit.com{obj['permalink']}"
     if 'score' in columns:
       output_list[index] = obj['score']
@@ -126,5 +128,80 @@ def write_csv_line(writer, obj, i, columns):
 def scrape_with_selenium():
   # Read the configuration file
   config = OmegaConf.load("./config.yaml")
+  columns = config.data.reddit_post.columns
+  replace_pattern = config.data.reddit_post.replace_pattern
+  outdata_format = config.data.reddit_post.selenium.outdata_format
+  out_dir = config.data.reddit_post.outdata_dir
+  outfile = out_dir + outdata_format
+  
   # Target cryptos for scraping
   crypto_list = config.crypto_list
+  options = webdriver.ChromeOptions()
+  driver = webdriver.Chrome(options=options)
+  #driver = webdriver.Chrome()
+  for subredit in crypto_list:
+    outfile = outfile.replace(replace_pattern, subredit)
+    print("check outfile......")
+    print(outfile)
+    link = f"https://www.reddit.com/r/{subredit}/top/?t=day"
+    print(f"processing: {link}...")
+    visited = set()
+    if os.path.exists(outfile):
+      print("file exists, append to it...")
+      data = pd.read_csv(outfile)
+      visited = set(data['id'])
+      handle = open(outfile, 'a', encoding='UTF-8', newline='')
+      writer = csv.writer(handle)
+    else:
+      handle = open(outfile, 'w', encoding='UTF-8', newline='')
+      writer = csv.writer(handle)
+      writer.writerow(columns)
+    
+    index = len(visited)
+    driver.get(link)
+    driver.maximize_window()
+    time.sleep(5)
+    html = lazy_scroll(driver)
+    parser = BeautifulSoup(html, 'html.parser')
+    items = parser.find_all('shreddit-post')
+    n = len(items)
+    
+    # iterating each post and extract the information
+    for i in range(n):
+      id = items[i]['id'].split('_')[-1]
+      if id in visited:
+        continue
+      new_data = dict()
+      new_data['id'] = id
+      time_str = items[i]['created-timestamp']
+      input_datetime = datetime.strptime(time_str, '%Y-%m-%dT%H:%M:%S.%f%z')
+      new_data['created_utc'] = int(input_datetime.timestamp())
+      new_data['body'] = clean_text(items[i].get_text())
+      new_data['permalink'] = items[i]["permalink"]
+      new_data['score'] = items[i]['score']
+      write_csv_line(writer, new_data, i + index, columns)
+    break 
+  driver.close()
+
+# columns: ['index', 'id', 'day', 'title', 'author_fullname', 'url', 'score']
+# Scroll the page down to retrieve all the Reddit posts
+def lazy_scroll(driver):
+    current_height = driver.execute_script('window.scrollTo(0,document.body.scrollHeight);')
+    while True:
+        driver.execute_script('window.scrollTo(0,document.body.scrollHeight);')
+        time.sleep(4)
+        new_height = driver.execute_script('return document.body.scrollHeight')   
+        if new_height == current_height:      # this means we have reached the end of the page!
+            html = driver.page_source
+            break
+        current_height = new_height
+    return html
+
+def clean_text(inp):
+  # remove \n, \r and do lower case
+  inp = inp.replace("\t", " ").replace("\n", "").lower()#.replace('/n','').lower()
+  # remove links and special characters
+  inp = re.sub(r"(?:\@|https?\://)\S+", "", inp)
+  inp = re.sub(r'[^\x00-\x7f]',r'', inp)
+  # remove multiple spaces
+  return re.sub("\s\s+" , " ", inp)
