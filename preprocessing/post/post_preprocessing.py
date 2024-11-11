@@ -6,7 +6,7 @@ from tqdm import tqdm
 import pickle
 import re 
 from omegaconf import DictConfig, OmegaConf
-
+import os 
 
 # Get global variables for the processing.
 with open("./Emoji_dict.p", 'rb') as fp:
@@ -60,6 +60,8 @@ def post_preprocessing():
   replace_pattern = config.text_encoding.replace_pattern
   for crypto in crypto_list:
     indata_name = indata_format.replace(replace_pattern, crypto)
+    if os.path.exists(crypto_data_dir+indata_name) is False:
+      continue
     outdata_name = output_format.replace(replace_pattern, crypto)
     data = pd.read_csv(crypto_data_dir+indata_name)
     data = deal_with_emojis(data)
