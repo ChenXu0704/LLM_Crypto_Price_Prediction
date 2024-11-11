@@ -1,5 +1,5 @@
 from transformers import AutoTokenizer
-from transformers import AutoModelForSequenceClassification
+from transformers import TFAutoModelForSequenceClassification
 import numpy as np
 import pandas as pd
 from tqdm import tqdm 
@@ -14,7 +14,7 @@ with open("./Emoji_dict.p", 'rb') as fp:
 config = OmegaConf.load("./config.yaml")
 transformer_model = config.text_encoding.model
 tokenizer = AutoTokenizer.from_pretrained(transformer_model)
-bert_model = AutoModelForSequenceClassification.from_pretrained(transformer_model)
+bert_model = TFAutoModelForSequenceClassification.from_pretrained(transformer_model)
 
 # Using emoji dictionary to replace the emoji in the text
 def convert_emojis_to_word(text):
@@ -37,16 +37,17 @@ def cls_bert(text):
   words = text.split(" ")
   if len(words) > max_length:
     text = " ".join(words[:max_length])
-  try:
-    encoded_text = tokenizer(text, return_tensors='pt')
-    output = bert_model(**encoded_text, output_hidden_states=True)
-    return output.hidden_states[-1][0][0]
-  except:
-    print(f"Failed to embed {text}")
-    return np.zeroes(768)
+  #try:
+  encoded_text = tokenizer(text, return_tensors='tf')
+  output = bert_model(**encoded_text, output_hidden_states=True)
+  return output.hidden_states[-1][0][0]
+  # except:
+  #   print(f"Failed to embed {text}")
+  #   return np.zeros(768)
 
 def get_count_each_day(data):
-  data['count'] = 1
+  data = data.copy()
+  data.loc[:, 'count'] = 1
   data = data.groupby('day').agg({'count': 'sum'}).reset_index()
   return data
 
@@ -55,7 +56,7 @@ def post_preprocessing():
   crypto_list = config.crypto_list
   crypto_data_dir = config.text_encoding.data_dir
   indata_format = config.text_encoding.indata_format
-  output_format = config.text_encoding.indata_format
+  output_format = config.text_encoding.output_format
   replace_pattern = config.text_encoding.replace_pattern
   for crypto in crypto_list:
     indata_name = indata_format.replace(replace_pattern, crypto)
@@ -64,10 +65,13 @@ def post_preprocessing():
     data = deal_with_emojis(data)
     embed = []
     for i, entry in tqdm(data.iterrows(), total=len(data)):
-      embed.append(cls_bert(entry['emoj_replc']).tolist())
+      embed.append(cls_bert(entry['emoj_replc']).numpy().tolist())
+    embed = np.array(embed)
     new_columns_df = pd.DataFrame(embed, columns=[f'embed_{i}' for i in range(embed.shape[1])])
     data = pd.concat([data, new_columns_df], axis=1)
-    data.drop(['emoj_replc', 'n_comments', 'title', 'id'], axis=1, inplace=True)
+    keep_columns = [f'embed_{i}' for i in range(embed.shape[1])]
+    keep_columns.append('day')
+    data = data[keep_columns]
     data_agg = data.groupby('day').agg('mean').reset_index()
     data_count = get_count_each_day(data[['day']])
     data_agg = pd.merge(data_agg, data_count, on='day', how='left')
