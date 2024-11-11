@@ -3,7 +3,9 @@ import hydra
 import pandas as pd
 import os 
 from preprocessing.price import price_preprocessing
+from preprocessing.post import post_preprocessing
 from reddit_post_scrape import reddit_post_scrape
+
 
 def main() -> None:
     config = OmegaConf.load("./config.yaml")
@@ -23,8 +25,8 @@ def main() -> None:
         reddit_post_scrape.scrape_with_selenium()
     else:
         print("Please chosse from 'pushshift' and 'selenium' from scrape_method in config file")
-        return
-
+        #exit()
+    post_preprocessing.post_preprocessing()
         
 
 if __name__ == "__main__":
