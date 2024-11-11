@@ -6,7 +6,7 @@ data:
             indata_format: 'cryptoname_price_history.csv'
             replace_pattern: 'cryptoname'
       reddit_post:
-            scrape_method: 'selenium' #for day by day purpose. 'pushshift' # for bulk scraping purpose, disabled by Reddit
+            scrape_method: 'seleniums' #for day by day purpose. 'pushshift' # for bulk scraping purpose, disabled by Reddit
             columns: ['index', 'id', 'day', 'title', 'author_fullname', 'url', 'score']
             pushshift:
                   start_date: "06/01/2021"
@@ -22,5 +22,11 @@ data:
             outdata_dir: './data/post/'
             replace_pattern: 'cryptoname'
 text_encoding:
-      model: "cardiffnlp/twitter-roberta-base-sentiment"          
+      model: "cardiffnlp/twitter-roberta-base-sentiment"  
+      data_dir: './data/post/'
+      indata_format: 'cryptoname_postlink_selelium.csv'   
+      output_format: 'cryptoname_post_embedding.csv' 
+      replace_pattern: 'cryptoname'
+      
+
             
