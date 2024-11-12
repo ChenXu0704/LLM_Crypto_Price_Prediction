@@ -5,7 +5,7 @@ import pandas as pd
 from tqdm import tqdm 
 import pickle
 import re 
-from omegaconf import DictConfig, OmegaConf
+from omegaconf import OmegaConf
 import os 
 
 # Get global variables for the processing.
