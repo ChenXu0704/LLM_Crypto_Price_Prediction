@@ -21,12 +21,18 @@ data:
                   outdata_format: "cryptoname_postlink_selelium.csv"
             outdata_dir: './data/post/'
             replace_pattern: 'cryptoname'
+      data_merge:
+            outdata_dir: './data/merge/'
+            outdata_format: "cryptoname_merge.csv"
+            replace_pattern: "cryptoname"
+
 text_encoding:
       model: "cardiffnlp/twitter-roberta-base-sentiment"  
       data_dir: './data/post/'
       indata_format: 'cryptoname_postlink_selelium.csv'   
       output_format: 'cryptoname_post_embedding.csv' 
       replace_pattern: 'cryptoname'
-      
+
+
 
             
