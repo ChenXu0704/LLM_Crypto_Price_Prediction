@@ -5,7 +5,7 @@ import os
 from preprocessing.price import price_preprocessing
 from preprocessing.post import post_preprocessing
 from reddit_post_scrape import reddit_post_scrape
-
+from preprocessing.merge import merge_post_price
 
 def main() -> None:
     config = OmegaConf.load("./config.yaml")
@@ -27,7 +27,7 @@ def main() -> None:
         print("Please chosse from 'pushshift' and 'selenium' from scrape_method in config file")
         #exit()
     post_preprocessing.post_preprocessing()
-        
+    merge_post_price.merge()
 
 if __name__ == "__main__":
     print("Running main()...")
