@@ -33,6 +33,9 @@ text_encoding:
       output_format: 'cryptoname_post_embedding.csv' 
       replace_pattern: 'cryptoname'
 
+model:
+      hidden_layer: 10
+
 
 
             
