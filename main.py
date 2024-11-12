@@ -6,6 +6,7 @@ from preprocessing.price import price_preprocessing
 from preprocessing.post import post_preprocessing
 from reddit_post_scrape import reddit_post_scrape
 from preprocessing.merge import merge_post_price
+from models import NeuralNetworkForPricePrediction
 
 def main() -> None:
     config = OmegaConf.load("./config.yaml")
@@ -26,8 +27,11 @@ def main() -> None:
     else:
         print("Please chosse from 'pushshift' and 'selenium' from scrape_method in config file")
         #exit()
-    post_preprocessing.post_preprocessing()
-    merge_post_price.merge()
+    #post_preprocessing.post_preprocessing()
+    # For test purpose, file nan with 0.5 for now
+    data = merge_post_price.merge().fillna(0.5)
+    hidden_layer = config.model.hidden_layer
+    model = NeuralNetworkForPricePrediction(hidden_layer)
 
 if __name__ == "__main__":
     print("Running main()...")
