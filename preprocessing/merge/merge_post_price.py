@@ -5,10 +5,14 @@ import os
 config = OmegaConf.load("./config.yaml")
 crypto_list = config.crypto_list
 
+
 def merge():
   replace_pattern = config.data.crypto_price.replace_pattern
   indata_dir_price = config.data.crypto_price.data_dir
   indata_dir_crypt = config.text_encoding.data_dir
+  features = ["embed_%d" %i for i in range(768)]
+  features.extend(['Date', 'diff','pre_day']) 
+  df_merge = []
   for crypto in crypto_list:
     indata_price = config.data.crypto_price.indata_format.replace(replace_pattern, crypto)
     indata_crypt = config.text_encoding.output_format.replace(replace_pattern, crypto)
@@ -24,8 +28,8 @@ def merge():
     data_price = data_price[['Date', 'diff','pre_day']]
     data_merge = pd.merge(data_crypt, data_price, left_on='day',right_on='pre_day',how='right')
     data_merge.to_csv(output_dir + output_name, index=False)
-    break
-
+    df_merge.append(data_merge)
+  return pd.concat(df_merge, ignore_index=True)
 
 def prev_date(date_str):
   date_obj = datetime.strptime(date_str, '%Y-%m-%d')
