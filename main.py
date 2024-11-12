@@ -7,7 +7,7 @@ from preprocessing.post import post_preprocessing
 from reddit_post_scrape import reddit_post_scrape
 from preprocessing.merge import merge_post_price
 from models import NeuralNetworkForPricePrediction
-
+from Dataloader.dataloader import dataloader
 def main() -> None:
     config = OmegaConf.load("./config.yaml")
     crypto_list = config.crypto_list
@@ -32,6 +32,7 @@ def main() -> None:
     data = merge_post_price.merge().fillna(0.5)
     hidden_layer = config.model.hidden_layer
     model = NeuralNetworkForPricePrediction(hidden_layer)
+    (train_loader, valid_loader) = dataloader(data)
 
 if __name__ == "__main__":
     print("Running main()...")
