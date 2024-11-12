@@ -6,7 +6,7 @@ from preprocessing.price import price_preprocessing
 from preprocessing.post import post_preprocessing
 from reddit_post_scrape import reddit_post_scrape
 from preprocessing.merge import merge_post_price
-from models import NeuralNetworkForPricePrediction
+from models.NeuralNetworkForPricePrediction import NeuralNetworkForPricePrediction 
 from Dataloader.dataloader import dataloader
 def main() -> None:
     config = OmegaConf.load("./config.yaml")
