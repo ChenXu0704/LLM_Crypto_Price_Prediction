@@ -2,7 +2,7 @@ from torch.utils.data import DataLoader, TensorDataset
 from omegaconf import OmegaConf
 import torch 
 config = OmegaConf.load("./config.yaml")
-def dataload(df):
+def dataloader(df):
   n_samples = df.shape[0]
   training_rate = config.data.loader.training_rate
   embd_lst = ["embed_%d" %i for i in range(768)]
