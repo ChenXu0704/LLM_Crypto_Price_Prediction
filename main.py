@@ -16,19 +16,20 @@ def main() -> None:
     crypto_data_replace = config.data.crypto_price.replace_pattern
     main_dir = os.getcwd()
     scrape_helper = config.data.reddit_post.scrape_method
-    for crypto in crypto_list:
-        crypto_file = main_dir + crypto_data_dir + crypto_data_format
-        crypto_file = crypto_file.replace(crypto_data_replace, crypto)
-        price_preprocessing.crypto_price_preprocessing(crypto_file)
-    if scrape_helper == 'pushshift':
-        reddit_post_scrape.scrape_with_pushshift()
-    elif scrape_helper == 'selenium':
-        reddit_post_scrape.scrape_with_selenium()
-    else:
-        print("Please chosse from 'pushshift' and 'selenium' from scrape_method in config file")
-        #exit()
-        
-    post_preprocessing.post_preprocessing()
+    if config.data.crypto_price.process:
+        for crypto in crypto_list:
+            crypto_file = main_dir + crypto_data_dir + crypto_data_format
+            crypto_file = crypto_file.replace(crypto_data_replace, crypto)
+            price_preprocessing.crypto_price_preprocessing(crypto_file)
+        if scrape_helper == 'pushshift':
+            reddit_post_scrape.scrape_with_pushshift()
+        elif scrape_helper == 'selenium':
+            reddit_post_scrape.scrape_with_selenium()
+        else:
+            print("Please chosse from 'pushshift' and 'selenium' from scrape_method in config file")
+            exit()
+    if config.data.reddit_post.process:
+        post_preprocessing.post_preprocessing()
     
     data = merge_post_price.merge()
     
