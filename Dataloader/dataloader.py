@@ -15,4 +15,4 @@ def dataloader(df):
   valid_dataset = TensorDataset(X_valid, y_valid)
   valid_loader = DataLoader(valid_dataset, batch_size=32)
 
-  return (n_samples, train_loader, valid_loader)
+  return (train_loader, valid_loader)
