@@ -32,7 +32,6 @@ def main() -> None:
         post_preprocessing.post_preprocessing()
     
     data = merge_post_price.merge()
-    
     train_loader, valid_loader = dataloader(data)
     training(train_loader, valid_loader)
 if __name__ == "__main__":
